@@ -1,3 +1,4 @@
+
 import string
 import pandas as pd
 import numpy as np
@@ -76,6 +77,160 @@ DEF_ATT = data[2]
 ATT_ATT = data[3]
 
 ###########################################################################################################
+st.markdown('## Scatter Plot of All Players in FIFA-20')
+def all_players():
+    fig = go.Figure(data=go.Scatter(
+        x = data_all['Overall'],
+        y = data_all['Value(Euro)'],
+        mode='markers',
+        marker=dict(
+            size=16,
+            color=data_all['Age'], #set color equal to a variable
+            colorscale='Plasma', # one of plotly colorscales
+            showscale=True
+        ),
+        text= data_all.index,
+    ))
+
+    fig.update_layout(title='Styled Scatter Plot (colored by Age) year 2020 - Overall Rating vs Value in Euros',
+                    xaxis_title='Overall Rating',
+                    yaxis_title='Value in Euros',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(family='Cambria, monospace', size=12, color='#000000'))
+    return fig
+
+players = all_players()
+st.plotly_chart(players, use_container_width=True)
+
+st.write('This is a scatter plot of all the players in FIFA-20.')
+
+if st.checkbox("Show Players' Data", False):
+    st.latex("Players' Data")
+    number0 = st.slider('How many Players do you want to display?', 1, 18278)
+    st.write(data_all.iloc[0 : number0, :])
+
+###########################################################################################################
+#A list of all colors in Plotly Charts (to be used later)
+plotly_colors = np.array(['aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure',
+                'beige', 'bisque', 'black', 'blanchedalmond', 'blue',
+                'blueviolet', 'brown', 'burlywood', 'cadetblue',
+                'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
+                'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan',
+                'darkgoldenrod', 'darkgray', 'darkgrey', 'darkgreen',
+                'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange',
+                'darkorchid', 'darkred', 'darksalmon', 'darkseagreen',
+                'darkslateblue', 'darkslategray', 'darkslategrey',
+                'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue',
+                'dimgray', 'dimgrey', 'dodgerblue', 'firebrick',
+                'forestgreen', 'fuchsia', 'gainsboro',
+                'gold', 'goldenrod', 'gray', 'grey', 'green',
+                'greenyellow', 'honeydew', 'hotpink', 'indianred', 'indigo',
+                'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen',
+                'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan',
+                'lightgoldenrodyellow', 'lightgray', 'lightgrey',
+                'lightgreen', 'lightpink', 'lightsalmon', 'lightseagreen',
+                'lightskyblue', 'lightslategray', 'lightslategrey',
+                'lightsteelblue', 'lightyellow', 'lime', 'limegreen',
+                'linen', 'magenta', 'maroon', 'mediumaquamarine',
+                'mediumblue', 'mediumorchid', 'mediumpurple',
+                'mediumseagreen', 'mediumslateblue', 'mediumspringgreen',
+                'mediumturquoise', 'mediumvioletred', 'midnightblue',
+                'mintcream', 'mistyrose', 'moccasin', 'navy',
+                'oldlace', 'olive', 'olivedrab', 'orange', 'orangered',
+                'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise',
+                'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink',
+                'plum', 'powderblue', 'purple', 'red', 'rosybrown',
+                'royalblue', 'saddlebrown', 'salmon', 'sandybrown',
+                'seagreen', 'seashell', 'sienna', 'skyblue',
+                'slateblue', 'slategray', 'springgreen',
+                'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise',
+                'violet', 'wheat', 'yellow',
+                'yellowgreen'])
+plot_colors_select = plotly_colors.shape[0]
+
+###########################################################################################################
+st.write(''' ## Player Comparison''')
+st.write(''' To compare two players check the box below and select name of Clubs, data to be compared and name of the Players from the side bar ''')
+
+@st.cache(persist = True)
+@st.cache(suppress_st_warning=True)
+@st.cache(allow_output_mutation=True)
+def comparison_data():
+    fifa_org = pd.read_csv('players_20.csv')
+
+    to_drop = ['sofifa_id','player_url', 'long_name', 'body_type', 'real_face', 'player_tags', 'team_jersey_number', 'loaned_from', 'joined', 'contract_valid_until','nation_jersey_number']
+    fifa_org.drop(columns = to_drop, inplace=True)
+
+    def rena(a):                       # function to rename columns
+        if a=='club':
+            return 'Clubs'
+        if a=='short_name':
+            return 'Name'
+        if len(a)==2 or len(a)==3 and a!='age':
+            a = a.upper()
+        else:
+            a = a.replace('_',' ')
+            a = string.capwords(a)
+        return a
+        
+    fifa_org.rename(columns = lambda x: rena(x), inplace=True)
+    fifa_org.rename(columns = {'Height Cm':'Height(cm)','Weight Kg':'Weight(kg)','Value Eur':'Value(Euro)', 'Wage Eur':'Wage(Euro)'}, inplace = True)
+    
+    fifa_org.index+=1
+    return fifa_org
+
+fifa_org = comparison_data()
+
+attr = ["Age","Height(cm)","Weight(kg)","Overall","Potential","Value(Euro)","Wage(Euro)","International Reputation","Weak Foot",
+  "Skill Moves","Release Clause Eur","Pace","Shooting","Passing","Dribbling","Defending","Physic","Gk Diving","Gk Handling","Gk Kicking",
+  "Gk Reflexes","Gk Speed","Gk Positioning","Player Traits","Attacking Crossing","Attacking Finishing","Attacking Heading Accuracy",         "Attacking Short Passing","Attacking Volleys","Skill Dribbling","Skill Curve","Skill Fk Accuracy","Skill Long Passing",
+  "Skill Ball Control","Movement Acceleration","Movement Sprint Speed","Movement Agility","Movement Reactions","Movement Balance",
+  "Power Shot Power","Power Jumping","Power Stamina","Power Strength","Power Long Shots","Mentality Aggression","Mentality Interceptions",
+  "Mentality Positioning","Mentality Vision","Mentality Penalties","Mentality Composure","Defending Marking","Defending Standing Tackle",
+  "Defending Sliding Tackle","Goalkeeping Diving","Goalkeeping Handling","Goalkeeping Kicking","Goalkeeping Positioning",
+  "Goalkeeping Reflexes","LS","ST","RS","LW","LF","CF","RF","RW","LAM","CAM","RAM","LM","LCM","CM","RCM","RM","LWB","LDM","CDM","RDM",
+  "RWB","LB","LCB","CB","RCB","RB"]
+
+if st.checkbox("Check the box to compare players"):
+    
+    teams = np.array(st.sidebar.multiselect("Select the name of Club:", fifa_org['Clubs'].unique()))
+    
+    variables = np.array(st.sidebar.multiselect("Select data to compare:", attr))
+    
+    selected_clubs = fifa_org[fifa_org['Clubs'].isin(teams)][variables]#.set_index('Name', inplace = True)
+    selected_clubs['Name'] = fifa_org['Name']
+    selected_clubs.set_index('Name', inplace = True)    
+    selected_players = st.sidebar.multiselect('Select the Players to be compared:', selected_clubs.index)#.Name.unique())#.loc[:, 'Name'])#..unique())#, two_clubs_data.Name.unique())
+    
+    is_check = st.checkbox("Check the box to display Players of selected Clubs")
+    
+    if is_check:
+        a = [teams, variables, selected_clubs]
+        
+        if not a:
+            st.write('''### Please select required fields!''')
+        else:
+            st.write(selected_clubs)
+
+        if st.button("Click to see comparison Graphically"):
+            if not a:
+                st.write('''### Please select required fields!''')
+            else:                
+                graphToPlot = pd.DataFrame(selected_clubs.loc[selected_players, :])
+                values = graphToPlot.values[:, :]
+                #st.write(values)
+                @st.cache(persist = True)
+                def Comp(ALL, COLS, n):
+                    SamePlot = make_subplots(subplot_titles = variables[n:])
+                    SamePlot.add_trace(go.Bar(x = ALL.index, y = ALL.values[:, n]))                                    
+                    return SamePlot
+                for n in range(0, variables.shape[0]):
+                    FIGURE = Comp(graphToPlot, values, n)
+                    FIGURE.update_traces(marker_color=plotly_colors[np.random.randint(0, plot_colors_select)])
+                    st.plotly_chart(FIGURE)
+
+##################################################
 def gk_attributes():
     plt.figure(figsize = (28,12))
     sns.set_context('poster',font_scale=1)
@@ -130,129 +285,6 @@ if st.checkbox('Show Attack Attributes Correlation Table', False):
     st.latex('Attacking Attributes Correlation Table')
     st.write(ATT_ATT)
 st.write('''Here we can see how different attacking attributes may be related to each other and how they may contribute to the overall attributes of a Attackers.''')
-
-###########################################################################################################
-st.markdown('## Scatter Plot of All Players in FIFA-20')
-def all_players():
-    fig = go.Figure(data=go.Scatter(
-        x = data_all['Overall'],
-        y = data_all['Value(Euro)'],
-        mode='markers',
-        marker=dict(
-            size=16,
-            color=data_all['Age'], #set color equal to a variable
-            colorscale='Plasma', # one of plotly colorscales
-            showscale=True
-        ),
-        text= data_all.index,
-    ))
-
-    fig.update_layout(title='Styled Scatter Plot (colored by Age) year 2020 - Overall Rating vs Value in Euros',
-                    xaxis_title='Overall Rating',
-                    yaxis_title='Value in Euros',
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(family='Cambria, monospace', size=12, color='#000000'))
-    return fig
-
-players = all_players()
-st.plotly_chart(players, use_container_width=True)
-
-st.write('This is a scatter plot of all the players in FIFA-20.')
-
-if st.checkbox("Show Players' Data", False):
-    st.latex("Players' Data")
-    number0 = st.slider('How many Players do you want to display?', 1, 18278)
-    st.write(data_all.iloc[0 : number0, :])
-
-########################################################################################################### 
-st.write(''' ## Player Comparison''')
-st.write(''' To do comparison between players "Check the box" and select name of Clubs, data to be compare and name of the Players from the side bar ''')
-
-@st.cache(persist = True)
-@st.cache(suppress_st_warning=True)
-@st.cache(allow_output_mutation=True)
-def comparison_data():
-    fifa_org = pd.read_csv('players_20.csv')
-
-    to_drop = ['sofifa_id','player_url', 'long_name', 'body_type', 'real_face', 'player_tags', 'team_jersey_number', 'loaned_from', 'joined', 'contract_valid_until','nation_jersey_number']
-    fifa_org.drop(columns = to_drop, inplace=True)
-
-    def rena(a):                       # function to rename columns
-        if a=='club':
-            return 'Clubs'
-        if a=='short_name':
-            return 'Name'
-        if len(a)==2 or len(a)==3 and a!='age':
-            a = a.upper()
-        else:
-            a = a.replace('_',' ')
-            a = string.capwords(a)
-        return a
-        
-    fifa_org.rename(columns = lambda x: rena(x), inplace=True)             # renaming columns 
-#     st.write(fifa_org.head(5))
-    fifa_org.rename(columns = {'Height Cm':'Height(cm)','Weight Kg':'Weight(kg)','Value Eur':'Value(Euro)', 'Wage Eur':'Wage(Euro)'}, inplace = True)
-    
-    fifa_org.index+=1
-    return fifa_org
-
-fifa_org = comparison_data()
-
-attr = ["Age","Height(cm)","Weight(kg)","Overall","Potential","Value(Euro)","Wage(Euro)","International Reputation","Weak Foot",
-  "Skill Moves","Release Clause Eur","Pace","Shooting","Passing","Dribbling","Defending","Physic","Gk Diving","Gk Handling","Gk Kicking",
-  "Gk Reflexes","Gk Speed","Gk Positioning","Player Traits","Attacking Crossing","Attacking Finishing","Attacking Heading Accuracy",         "Attacking Short Passing","Attacking Volleys","Skill Dribbling","Skill Curve","Skill Fk Accuracy","Skill Long Passing",
-  "Skill Ball Control","Movement Acceleration","Movement Sprint Speed","Movement Agility","Movement Reactions","Movement Balance",
-  "Power Shot Power","Power Jumping","Power Stamina","Power Strength","Power Long Shots","Mentality Aggression","Mentality Interceptions",
-  "Mentality Positioning","Mentality Vision","Mentality Penalties","Mentality Composure","Defending Marking","Defending Standing Tackle",
-  "Defending Sliding Tackle","Goalkeeping Diving","Goalkeeping Handling","Goalkeeping Kicking","Goalkeeping Positioning",
-  "Goalkeeping Reflexes","LS","ST","RS","LW","LF","CF","RF","RW","LAM","CAM","RAM","LM","LCM","CM","RCM","RM","LWB","LDM","CDM","RDM",
-  "RWB","LB","LCB","CB","RCB","RB"]
-
-if st.checkbox("Check the box to do compare two players"):
-    
-    teams = st.sidebar.multiselect("Select the name of Club:", fifa_org['Clubs'].unique())
-    # st.write("Your input clubs", teams)
-
-    variables = st.sidebar.multiselect("Select the data to be compared:", attr)
-    # st.write("You selected these variables", variables)
-
-    selected_club_data = fifa_org[(fifa_org['Clubs'].isin(teams))]
-    two_clubs_data = selected_club_data[variables]
-    two_clubs_data['Name'] = fifa_org['Name']
-    first_col = two_clubs_data.pop('Name')
-    two_clubs_data.insert(0, 'Name', first_col)
-    two_clubs_data.index += 1 # making the index start from 1
-
-    selected_players = st.sidebar.multiselect('Select the players to be compared:', two_clubs_data.Name.unique())
-    # st.write("The players are", selected_players)
-    is_check = st.checkbox("Check the box to display data of selected clubs")
-    if is_check:
-        if not teams or not variables or not selected_players:
-            st.write('''### Please select required fields!''')
-        else:
-            st.write(two_clubs_data)
-        
-    if st.button("Submit"):
-        if not teams or not variables or not selected_players:
-            st.write('''### Please select required fields!''')
-        else:
-            if len(variables)>2 or len(teams)>2 or len(selected_players)>2:
-                st.write('''### Please select only 2 options from each field!''')
-            else:                
-                plot_data = two_clubs_data[(two_clubs_data['Name']).isin(selected_players)]
-                values = plot_data.values
-                value1 = values[0][1:]
-                value2 = values[1][1:]
-                index = np.arange(2)
-                width = 0.3
-                p1 = plt.bar(index, value1, width)
-                p2 = plt.bar(index+width, value2, width)
-                plt.xlabel("Variables")
-                plt.ylabel("Value")
-                plt.xticks(index, (variables))
-                plt.legend(values[:,0])
-                st.pyplot()    
     
 ###########################################################################################################    
 st.markdown('## Total Count of Left v/s Right Footed Players')
@@ -340,7 +372,6 @@ if st.checkbox('Players by Ratings', False):
 
 ###########################################################################################################
 st.markdown('## Top 30 Free-Kick Takers')
-
 def fk():
     best_fk = data_all[['skill_fk_accuracy']].sort_values('skill_fk_accuracy', ascending = False).head(30)
 
@@ -464,23 +495,3 @@ if st.checkbox('Show All Promising Players by Value (Euro 💶)', False):
     st.write(YPPC_Table.iloc[0 : number7, :])
     
 ###########################################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
