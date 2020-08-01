@@ -1,7 +1,6 @@
 # FIFA20_Insights_App
 Libraries I've used for this:
-
-Pandas
+- Pandas
 Numpy
 Seaborn
 Plotly
